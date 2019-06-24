@@ -133,7 +133,7 @@ class LanguageModel(object):
         batch_size = self.options['batch_size']
         unroll_steps = self.options['unroll_steps']
         projection_dim = self.options['lstm']['projection_dim']
-    
+
         cnn_options = self.options['char_cnn']
         filters = cnn_options['filters']
         n_filters = sum(f[1] for f in filters)
@@ -582,7 +582,7 @@ def average_gradients(tower_grads, batch_size, options):
         average_grads.append(grad_and_var)
 
     assert len(average_grads) == len(list(zip(*tower_grads)))
-    
+
     return average_grads
 
 
@@ -770,7 +770,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         if restart_ckpt_file is not None:
             loader = tf.train.Saver()
             loader.restore(sess, restart_ckpt_file)
-            
+
         summary_writer = tf.summary.FileWriter(tf_log_dir, sess.graph)
 
         # For each batch:
@@ -870,20 +870,16 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
 
             else:
                 # also run the histogram summaries
-                ret = sess.run(
-                    [train_op, summary_op, train_perplexity, hist_summary_op] + 
-                                                final_state_tensors,
-                    feed_dict=feed_dict
-                )
+                ret = sess.run([train_op, summary_op, train_perplexity, hist_summary_op] + final_state_tensors, feed_dict=feed_dict)
                 init_state_values = ret[4:]
-                
+
 
             if batch_no % 1250 == 0:
                 summary_writer.add_summary(ret[3], batch_no)
             if batch_no % 100 == 0:
                 # write the summaries to tensorboard and display perplexity
                 summary_writer.add_summary(ret[1], batch_no)
-                print("Batch %s, train_perplexity=%s" % (batch_no, ret[2]))
+                print("Batch %s out of %s, train_perplexity=%s" % (batch_no, n_batches_total, ret[2]))
                 print("Total time: %s" % (time.time() - t1))
 
             if (batch_no % 1250 == 0) or (batch_no == n_batches_total):
@@ -909,7 +905,7 @@ def clip_by_global_norm_summary(t_list, clip_norm, norm_name, variables):
         name = 'norm_pre_clip/' + v.name.replace(":", "_")
         summary_ops.append(tf.summary.scalar(name, ns))
 
-    # clip 
+    # clip
     clipped_t_list, tf_norm = tf.clip_by_global_norm(t_list, clip_norm)
 
     # summary ops after clipping
@@ -990,7 +986,7 @@ def test(options, ckpt_file, data, batch_size=256):
                 feed_dict.update({
                     model.token_ids_reverse:
                         np.zeros([batch_size, unroll_steps], dtype=np.int64)
-                })  
+                })
         else:
             feed_dict = {
                 model.tokens_characters:

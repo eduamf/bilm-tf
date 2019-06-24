@@ -12,7 +12,7 @@ def main(args):
     vocab = load_vocab(args.vocab_file, 50)
 
     # define the options
-    batch_size = 128  # batch size for each GPU
+    batch_size = 192  # batch size for each GPU
     n_gpus = 2
 
     # number of tokens in training data
@@ -33,9 +33,9 @@ def main(args):
       'max_characters_per_token': 50,
       'n_characters': 261,
       'n_highway': 2},
-    
+
      'dropout': 0.1,
-    
+
      'lstm': {
       'cell_clip': 3,
       'dim': 2048,  # Will leave it half-size for the time being
@@ -43,10 +43,10 @@ def main(args):
       'proj_clip': 3,
       'projection_dim': 512,
       'use_skip_connections': True},
-    
+
      'all_clip_norm_val': 10.0,
-    
-     'n_epochs': 5,  # Will leave it half-size for the time being
+
+     'n_epochs': 3,  # Will leave it half-size for the time being
      'n_train_tokens': n_train_tokens,
      'batch_size': batch_size,
      'n_tokens_vocab': vocab.size,
