@@ -24,7 +24,7 @@ class Vocabulary(object):
         self._bos = -1
         self._eos = -1
 
-        with smart_open(filename) as f:
+        with smart_open(filename, 'r') as f:
             idx = 0
             for line in f:
                 word_name = line.strip()
@@ -377,7 +377,7 @@ class LMDataset(object):
             list of (id, char_id) tuples.
         """
         print('Loading data from: %s' % shard_name)
-        with smart_open(shard_name) as f:
+        with smart_open(shard_name, 'r') as f:
             sentences_raw = f.readlines()
 
         if self._reverse:
