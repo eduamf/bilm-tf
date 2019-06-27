@@ -1,8 +1,8 @@
-
 import argparse
 
 from bilm.training import test, load_options_latest_checkpoint, load_vocab
 from bilm.data import LMDataset, BidirectionalLMDataset
+
 
 def main(args):
     options, ckpt_file = load_options_latest_checkpoint(args.save_dir)
@@ -35,9 +35,8 @@ if __name__ == '__main__':
     parser.add_argument('--vocab_file', help='Vocabulary file')
     parser.add_argument('--test_prefix', help='Prefix for test files')
     parser.add_argument('--batch_size',
-        type=int, default=256,
-        help='Batch size')
+                        type=int, default=256,
+                        help='Batch size')
 
-    args = parser.parse_args()
-    main(args)
-
+    arguments = parser.parse_args()
+    main(arguments)

@@ -1,7 +1,7 @@
-'''
+"""
 ELMo usage example to write biLM embeddings for an entire dataset to
 a file.
-'''
+"""
 
 import os
 import h5py

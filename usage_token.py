@@ -1,15 +1,14 @@
-'''
+"""
 ELMo usage example with pre-computed and cached context independent
 token representations
 
 Below, we show usage for SQuAD where each input example consists of both
 a question and a paragraph of context.
-'''
+"""
 
 import tensorflow as tf
 import os
-from bilm import TokenBatcher, BidirectionalLanguageModel, weight_layers, \
-    dump_token_embeddings
+from bilm import TokenBatcher, BidirectionalLanguageModel, weight_layers, dump_token_embeddings
 
 # Our small dataset.
 raw_context = [
@@ -43,9 +42,7 @@ dump_token_embeddings(
 )
 tf.reset_default_graph()
 
-
-
-## Now we can do inference.
+# Now we can do inference.
 # Create a TokenBatcher to map text to token ids.
 batcher = TokenBatcher(vocab_file)
 
@@ -87,7 +84,6 @@ with tf.variable_scope('', reuse=True):
         'output', question_embeddings_op, l2_coef=0.0
     )
 
-
 with tf.Session() as sess:
     # It is necessary to initialize variables once before running inference.
     sess.run(tf.global_variables_initializer())
@@ -102,4 +98,3 @@ with tf.Session() as sess:
         feed_dict={context_token_ids: context_ids,
                    question_token_ids: question_ids}
     )
-

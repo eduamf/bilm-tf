@@ -1,9 +1,9 @@
-'''
+"""
 ELMo usage example with character inputs.
 
 Below, we show usage for SQuAD where each input example consists of both
 a question and a paragraph of context.
-'''
+"""
 
 import tensorflow as tf
 import os

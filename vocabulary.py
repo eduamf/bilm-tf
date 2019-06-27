@@ -8,7 +8,7 @@ words = {}
 for line in sys.stdin:
     res = line.strip().split()
     for word in res:
-        if not word in words:
+        if word not in words:
             words[word] = 0
         words[word] += 1
 

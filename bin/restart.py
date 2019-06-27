@@ -1,10 +1,9 @@
 
-
 import argparse
-import numpy as np
 
-from bilm.training import train, load_options_latest_checkpoint, load_vocab
 from bilm.data import LMDataset, BidirectionalLMDataset
+from bilm.training import train, load_options_latest_checkpoint, load_vocab
+
 
 def main(args):
     options, ckpt_file = load_options_latest_checkpoint(args.save_dir)
@@ -53,6 +52,5 @@ if __name__ == '__main__':
     parser.add_argument('--n_train_tokens', type=int, default=0)
     parser.add_argument('--n_epochs', type=int, default=0)
 
-    args = parser.parse_args()
-    main(args)
-
+    arguments = parser.parse_args()
+    main(arguments)
