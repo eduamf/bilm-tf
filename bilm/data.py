@@ -1,9 +1,8 @@
 # originally based on https://github.com/tensorflow/models/tree/master/lm_1b
 import glob
 import random
-from smart_open import smart_open
+from smart_open import open
 import numpy as np
-
 from typing import List
 
 
@@ -25,7 +24,7 @@ class Vocabulary(object):
         self._bos = -1
         self._eos = -1
 
-        with smart_open(filename, 'r') as f:
+        with open(filename, 'r') as f:
             idx = 0
             for line in f:
                 word_name = line.strip()
@@ -384,7 +383,7 @@ class LMDataset(object):
             list of (id, char_id) tuples.
         """
         print('Loading data from: %s' % shard_name)
-        with smart_open(shard_name, 'r') as f:
+        with open(shard_name, 'r') as f:
             sentences_raw = f.readlines()
 
         if self._reverse:
