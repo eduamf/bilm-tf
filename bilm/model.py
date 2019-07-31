@@ -2,6 +2,7 @@ import json
 import h5py
 import numpy as np
 import tensorflow as tf
+
 from .data import UnicodeCharsVocabulary, Batcher, InvalidNumberOfCharacters
 
 DTYPE = 'float32'
@@ -228,7 +229,7 @@ def _pretrained_initializer(varname, weight_file, embedding_weight_file=None):
 
     # Tensorflow initializers are callables that accept a shape parameter
     # and some optional kwargs
-    def ret(shape):
+    def ret(shape, **kwargs):
         if list(shape) != list(weights.shape):
             raise ValueError(
                 "Invalid shape initializing {0}, got {1}, expected {2}".format(
@@ -339,9 +340,9 @@ class BidirectionalLanguageModelGraph(object):
 
         # the convolutions
         def make_convolutions(inp):
-            with tf.variable_scope('CNN') as conv_scope:
+            with tf.variable_scope('CNN') as scope:
                 convolutions = []
-                for nr_i, (width, num) in enumerate(filters):
+                for i, (width, num) in enumerate(filters):
                     if cnn_options['activation'] == 'relu':
                         # He initialization for ReLU activation
                         # with char embeddings init between -1 and 1
@@ -360,12 +361,12 @@ class BidirectionalLanguageModelGraph(object):
                             stddev=np.sqrt(1.0 / (width * char_embed_dim))
                         )
                     w = tf.get_variable(
-                        "W_cnn_%s" % nr_i,
+                        "W_cnn_%s" % i,
                         [1, width, char_embed_dim, num],
                         initializer=w_init,
                         dtype=DTYPE)
                     b = tf.get_variable(
-                        "b_cnn_%s" % nr_i, [num], dtype=DTYPE,
+                        "b_cnn_%s" % i, [num], dtype=DTYPE,
                         initializer=tf.constant_initializer(0.0))
 
                     conv = tf.nn.conv2d(
@@ -401,7 +402,7 @@ class BidirectionalLanguageModelGraph(object):
         if use_proj:
             assert n_filters > projection_dim
             with tf.variable_scope('CNN_proj') as scope:
-                weights_proj_cnn = tf.get_variable(
+                W_proj_cnn = tf.get_variable(
                     "W_proj", [n_filters, projection_dim],
                     initializer=tf.random_normal_initializer(
                         mean=0.0, stddev=np.sqrt(1.0 / n_filters)),
@@ -422,7 +423,7 @@ class BidirectionalLanguageModelGraph(object):
 
             for i in range(n_highway):
                 with tf.variable_scope('CNN_high_%s' % i) as scope:
-                    weights_carry = tf.get_variable(
+                    W_carry = tf.get_variable(
                         'W_carry', [highway_dim, highway_dim],
                         # glorit init
                         initializer=tf.random_normal_initializer(
@@ -432,7 +433,7 @@ class BidirectionalLanguageModelGraph(object):
                         'b_carry', [highway_dim],
                         initializer=tf.constant_initializer(-2.0),
                         dtype=DTYPE)
-                    weights_transform = tf.get_variable(
+                    W_transform = tf.get_variable(
                         'W_transform', [highway_dim, highway_dim],
                         initializer=tf.random_normal_initializer(
                             mean=0.0, stddev=np.sqrt(1.0 / highway_dim)),
@@ -442,12 +443,12 @@ class BidirectionalLanguageModelGraph(object):
                         initializer=tf.constant_initializer(0.0),
                         dtype=DTYPE)
 
-                embedding = high(embedding, weights_carry, b_carry,
-                                 weights_transform, b_transform)
+                embedding = high(embedding, W_carry, b_carry,
+                                 W_transform, b_transform)
 
         # finally project down if needed
         if use_proj:
-            embedding = tf.matmul(embedding, weights_proj_cnn) + b_proj_cnn
+            embedding = tf.matmul(embedding, W_proj_cnn) + b_proj_cnn
 
         # reshape back to (batch_size, tokens, dim)
         if use_highway or use_proj:
@@ -582,11 +583,11 @@ class BidirectionalLanguageModelGraph(object):
 
                 with tf.control_dependencies([layer_output]):
                     # update the initial states
-                    for ii in range(2):
+                    for i in range(2):
                         new_state = tf.concat(
-                            [final_state[ii][:batch_size, :],
-                             init_states[ii][batch_size:, :]], axis=0)
-                        state_update_op = tf.assign(init_states[ii], new_state)
+                            [final_state[i][:batch_size, :],
+                             init_states[i][batch_size:, :]], axis=0)
+                        state_update_op = tf.assign(init_states[i], new_state)
                         update_ops.append(state_update_op)
 
                 layer_input = layer_output
