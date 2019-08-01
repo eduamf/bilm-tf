@@ -20,8 +20,9 @@ with open(corpusfile, 'r') as f:
         res = line.strip()
         raw_sentences.append(res)
 
-tokenized_sentences = [sentence.split() for sentence in raw_sentences]
+raw_sentences = raw_sentences
 
+tokenized_sentences = [sentence.split() for sentence in raw_sentences]
 
 print('Sentences:', len(tokenized_sentences))
 
@@ -37,7 +38,7 @@ batcher = Batcher(vocab_file, 50)
 sentence_character_ids = tf.placeholder('int32', shape=(None, None, 50))
 
 # Build the biLM graph.
-bilm = BidirectionalLanguageModel(options_file, weight_file)
+bilm = BidirectionalLanguageModel(options_file, weight_file, max_batch_size=200)
 
 # Get ops to compute the LM embeddings.
 sentence_embeddings_op = bilm(sentence_character_ids)
