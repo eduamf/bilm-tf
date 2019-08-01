@@ -9,6 +9,11 @@ import zipfile
 import logging
 import json
 import re
+import os
+from smart_open import open
+import tensorflow as tf
+from bilm import Batcher, BidirectionalLanguageModel, weight_layers
+from gensim.matutils import unitvec
 
 
 def tokenize(string):
@@ -66,6 +71,27 @@ def get_word_vector(text, model, num):
     return semantic_fingerprint
 
 
+def get_elmo_vector(text, batcher, sentence_character_ids, elmo_sentence_input, nr):
+    with tf.Session() as sess:
+        # It is necessary to initialize variables once before running inference.
+        sess.run(tf.global_variables_initializer())
+
+        # Create batches of data.
+        sentence_ids = batcher.batch_sentences([text])
+
+        # Compute ELMo representations.
+        elmo_sentence_input_ = sess.run(elmo_sentence_input['weighted_op'],
+                                        feed_dict={sentence_character_ids: sentence_ids})
+        print(elmo_sentence_input_.shape)
+
+        query_word = text[nr]
+        print('Query:', query_word)
+        query_vec = elmo_sentence_input_[nr, :]
+        query_vec = unitvec(query_vec)
+        print(query_vec.shape)
+        return query_vec
+
+
 def load_word2vec_embeddings(embeddings_file):
     logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
     # Detect the model format by its extension:
@@ -99,3 +125,27 @@ def load_word2vec_embeddings(embeddings_file):
     emb_model.init_sims(replace=True)  # Unit-normalizing the vectors (if they aren't already)
     return emb_model
 
+
+def load_elmo_embeddings(directory):
+    vocab_file = os.path.join(directory, 'vocab.txt.gz')
+    options_file = os.path.join(directory, 'options.json')
+    weight_file = os.path.join(directory, 'model.hdf5')
+
+    # Create a Batcher to map text to character ids.
+    batcher = Batcher(vocab_file, 50)
+
+    # Input placeholders to the biLM.
+    sentence_character_ids = tf.placeholder('int32', shape=(None, None, 50))
+
+    # Build the biLM graph.
+    bilm = BidirectionalLanguageModel(options_file, weight_file)
+
+    # Get ops to compute the LM embeddings.
+    sentence_embeddings_op = bilm(sentence_character_ids)
+
+    # Get an op to compute ELMo (weighted average of the internal biLM layers)
+    # Our model includes ELMo at both the input and output layers
+    # of the task GRU, so we need 2x ELMo representations at each of the input and output.
+
+    elmo_sentence_input = weight_layers('input', sentence_embeddings_op, use_top_only=True)
+    return batcher, sentence_character_ids, elmo_sentence_input

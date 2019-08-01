@@ -11,9 +11,10 @@ from wsd_helpers import *
 warnings.filterwarnings("ignore")
 
 
-def classify(data_file, model=None):
+def classify(data_file, w2v=None, elmo=None):
     data = load_dataset(data_file)
     scores = []
+
     # data looks like {w1 = [[w1 context1, w1 context2, ...], [w2 context1, w2 context2, ...]], ...}
     for word in data:
         print(word)
@@ -21,8 +22,12 @@ def classify(data_file, model=None):
         y = []
         for instance in data[word]:
             sent, num, cl = instance
-            if model:
-                vect = get_word_vector(tokenize(sent), model, num)
+            if w2v:
+                vect = get_word_vector(tokenize(sent), w2v, num)
+            elif elmo:
+                batcher, sentence_character_ids, elmo_sentence_input = elmo
+                vect = get_elmo_vector(tokenize(sent),
+                                       batcher, sentence_character_ids, elmo_sentence_input, num)
             else:
                 vect = get_dummy_vector()
             x_train.append(vect)
@@ -80,14 +85,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
     arg('--input', help='Path to tab-separated file with WSD data', required=True)
-    arg('--model', help='Path to distributional model (optional)')
-    parser.set_defaults(model=False)
+    arg('--w2v', help='Path to word2vec model (optional)')
+    arg('--elmo', help='Path to ELMo model (optional)')
+    parser.set_defaults(w2v=False)
+    parser.set_defaults(elmo=False)
 
     args = parser.parse_args()
     data_path = args.input
 
-    if args.model:
-        emb_model = load_word2vec_embeddings(args.model)
-        eval_scores = classify(data_path, model=emb_model)
+    if args.w2v:
+        emb_model = load_word2vec_embeddings(args.w2v)
+        eval_scores = classify(data_path, w2v=emb_model)
+    elif args.elmo:
+        [batcher, sentence_character_ids, elmo_sentence_input] = load_elmo_embeddings(args.elmo)
+        eval_scores = classify(
+            data_path, elmo=[batcher, sentence_character_ids, elmo_sentence_input])
     else:
         classify(data_path)

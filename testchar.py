@@ -46,7 +46,7 @@ sentence_embeddings_op = bilm(sentence_character_ids)
 # Our model includes ELMo at both the input and output layers
 # of the task GRU, so we need 2x ELMo representations at each of the input and output.
 
-elmo_sentence_input = weight_layers('input', sentence_embeddings_op, use_top_only=True, l2_coef=0.0)
+elmo_sentence_input = weight_layers('input', sentence_embeddings_op, use_top_only=True)
 
 # elmo_sentence_output = weight_layers('output', sentence_embeddings_op, l2_coef=0.0)
 
