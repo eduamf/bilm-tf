@@ -22,7 +22,7 @@ def classify(data_file, model=None):
         for instance in data[word]:
             sent, num, cl = instance
             if model:
-                vect = get_word_vector(sent, model, num)
+                vect = get_word_vector(tokenize(sent), model, num)
             else:
                 vect = get_dummy_vector()
             x_train.append(vect)

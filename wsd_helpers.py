@@ -8,6 +8,13 @@ from gensim import models
 import zipfile
 import logging
 import json
+import re
+
+
+def tokenize(string):
+    token_pattern = re.compile('(?u)\w+')
+    tokens = [t.lower() for t in token_pattern.findall(string)]
+    return tokens
 
 
 def load_dataset(data_file):
@@ -25,13 +32,13 @@ def load_dataset(data_file):
             word_set = []
         sent = ' '.join([left, word, right])
         cl = int(sense_id)
-        num = len(left.split(' '))
+        num = len(tokenize(left))
         word_set.append((sent, num, cl))
     return data_set
 
 
 def get_dummy_vector():
-    vect = np.random.rand(1, 1024)
+    vect = np.random.rand(1, 100)
     return vect[0]
 
 
