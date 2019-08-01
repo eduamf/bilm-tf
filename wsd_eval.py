@@ -30,7 +30,8 @@ def classify(data_file, model=None):
         classes = Counter(y)
         print('Distribution of classes in the whole sample:', dict(classes))
 
-        clf = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='multinomial')
+        clf = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto',
+                                 class_weight='balanced')
         averaging = True  # Do you want to average the cross-validate metrics?
 
         scoring = ['precision_macro', 'recall_macro', 'f1_macro']

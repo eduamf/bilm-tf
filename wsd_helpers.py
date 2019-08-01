@@ -42,6 +42,30 @@ def get_dummy_vector():
     return vect[0]
 
 
+def get_word_vector(text, model, num):
+    """
+        :param text: list of words
+        :param model: word2vec model in Gensim format
+        :param num: number of the word to exclude
+        :return: average vector of words in text
+        """
+    # Creating list of all words in the document which are present in the model
+    excl_word = text[num]
+    words = [w for w in text if w in model and w != excl_word]
+    lexicon = list(set(words))
+    lw = len(lexicon)
+    if lw < 1:
+        print('Empty lexicon in', text, file=sys.stderr)
+        return np.zeros(model.vector_size)
+    vectors = np.zeros((lw, model.vector_size))  # Creating empty matrix of vectors for words
+    for i in list(range(lw)):  # Iterate over words in the text
+        word = lexicon[i]
+        vectors[i, :] = model[word]  # Adding word and its vector to matrix
+    semantic_fingerprint = np.sum(vectors, axis=0)  # Computing sum of all vectors in the document
+    semantic_fingerprint = np.divide(semantic_fingerprint, lw)  # Computing average vector
+    return semantic_fingerprint
+
+
 def load_word2vec_embeddings(embeddings_file):
     logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
     # Detect the model format by its extension:
@@ -75,26 +99,3 @@ def load_word2vec_embeddings(embeddings_file):
     emb_model.init_sims(replace=True)  # Unit-normalizing the vectors (if they aren't already)
     return emb_model
 
-
-def get_word_vector(text, model, num):
-    """
-        :param text: list of words
-        :param model: word2vec model in Gensim format
-        :param num: number of the word to exclude
-        :return: average vector of words in text
-        """
-    # Creating list of all words in the document, which are present in the model
-    excl_word = text[num]
-    words = [w for w in text if w in model and w != excl_word]
-    lexicon = list(set(words))
-    lw = len(lexicon)
-    if lw < 1:
-        print('Empty lexicon in', text, file=sys.stderr)
-        return np.zeros(model.vector_size)
-    vectors = np.zeros((lw, model.vector_size))  # Creating empty matrix of vectors for words
-    for i in list(range(lw)):  # Iterate over words in the text
-        word = lexicon[i]
-        vectors[i, :] = model[word]  # Adding word and its vector to matrix
-    semantic_fingerprint = np.sum(vectors, axis=0)  # Computing sum of all vectors in the document
-    semantic_fingerprint = np.divide(semantic_fingerprint, lw)  # Computing average vector
-    return semantic_fingerprint
