@@ -20,18 +20,22 @@ def classify(data_file, w2v=None, elmo=None):
         print(word)
         x_train = []
         y = []
-        for instance in data[word]:
-            sent, num, cl = instance
-            if w2v:
-                vect = get_word_vector(tokenize(sent), w2v, num)
-            elif elmo:
-                batcher, sentence_character_ids, elmo_sentence_input = elmo
-                vect = get_elmo_vector(tokenize(sent),
-                                       batcher, sentence_character_ids, elmo_sentence_input, num)
-            else:
-                vect = get_dummy_vector()
-            x_train.append(vect)
-            y.append(cl)
+        if elmo:
+            batcher, sentence_character_ids, elmo_sentence_input = elmo
+            sentences = [tokenize(el[0]) for el in data[word]]
+            nums = [el[1] for el in data[word]]
+            y = [el[2] for el in data[word]]
+            x_train = get_elmo_vector(
+                sentences, batcher, sentence_character_ids, elmo_sentence_input, nums)
+        else:
+            for instance in data[word]:
+                sent, num, cl = instance
+                if w2v:
+                    vect = get_word_vector(tokenize(sent), w2v, num)
+                else:
+                    vect = get_dummy_vector()
+                x_train.append(vect)
+                y.append(cl)
         classes = Counter(y)
         print('Distribution of classes in the whole sample:', dict(classes))
 
@@ -41,10 +45,15 @@ def classify(data_file, w2v=None, elmo=None):
 
         scoring = ['precision_macro', 'recall_macro', 'f1_macro']
         # some splits are containing samples of one class, so we split until the split is OK
+        counter = 0
         while True:
             try:
                 cv_scores = cross_validate(clf, x_train, y, cv=5, scoring=scoring)
             except ValueError:
+                counter += 1
+                if counter > 500:
+                    print('Impossible to find a good split!')
+                    exit()
                 continue
             else:
                 # No error; stop the loop
@@ -97,8 +106,8 @@ if __name__ == '__main__':
         emb_model = load_word2vec_embeddings(args.w2v)
         eval_scores = classify(data_path, w2v=emb_model)
     elif args.elmo:
-        [batcher, sentence_character_ids, elmo_sentence_input] = load_elmo_embeddings(args.elmo)
+        emb_model = load_elmo_embeddings(args.elmo)
         eval_scores = classify(
-            data_path, elmo=[batcher, sentence_character_ids, elmo_sentence_input])
+            data_path, elmo=emb_model)
     else:
         classify(data_path)
