@@ -32,10 +32,10 @@ def load_dataset(data_file):
     for row in data:
         i, lemma, sense_id, left, word, right, senses = row
         if lemma != cur_lemma:
-            cur_lemma = lemma
             if len(word_set) > 0:
                 data_set[cur_lemma] = word_set
             word_set = []
+            cur_lemma = lemma
         sent = ' '.join([left, word, right])
         sent_len = len(tokenize(sent))
         lens.append(sent_len)
