@@ -23,6 +23,7 @@ def tokenize(string):
 
 
 def load_dataset(data_file):
+    lens = []
     data = csv.reader(open(data_file), delimiter='\t')
     _ = next(data)
     data_set = {}
@@ -36,9 +37,20 @@ def load_dataset(data_file):
                 data_set[cur_lemma] = word_set
             word_set = []
         sent = ' '.join([left, word, right])
+        sent_len = len(tokenize(sent))
+        lens.append(sent_len)
+        # if len(tokenize(sent)) > 400:
+        #    print(sent_len)
+        #    print(word)
+        #    print(sent)
         cl = int(sense_id)
         num = len(tokenize(left))
         word_set.append((sent, num, cl))
+    print('Dataset loaded')
+    print('Sentences:', len(lens))
+    print('Max length:', np.max(lens))
+    print('Average length:', np.average(lens))
+    print('Standard deviation:', np.std(lens))
     return data_set
 
 
@@ -142,7 +154,7 @@ def load_elmo_embeddings(directory):
     sentence_character_ids = tf.placeholder('int32', shape=(None, None, 50))
 
     # Build the biLM graph.
-    bilm = BidirectionalLanguageModel(options_file, weight_file, max_batch_size=200)
+    bilm = BidirectionalLanguageModel(options_file, weight_file, max_batch_size=300)
 
     # Get ops to compute the LM embeddings.
     sentence_embeddings_op = bilm(sentence_character_ids)
