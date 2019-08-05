@@ -37,7 +37,9 @@ def load_dataset(data_file):
             word_set = []
             cur_lemma = lemma
         sent = ' '.join([left, word, right])
-        sent_len = len(tokenize(sent))
+        tok_sent = tokenize(sent)
+        # tok_sent = tok_sent[:70]  # We cut long sentences from the right
+        sent_len = len(tok_sent)
         lens.append(sent_len)
         # if len(tokenize(sent)) > 400:
         #    print(sent_len)
