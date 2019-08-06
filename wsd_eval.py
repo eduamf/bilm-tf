@@ -40,6 +40,9 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30):
                         sess, chunk_sentences, batcher, sentence_character_ids,
                         elmo_sentence_input, chunk_nums)
         else:
+            print('=====')
+            print('%s' % word)
+            print('=====')
             for instance in data[word]:
                 sent, num, cl = instance
                 if w2v:
