@@ -62,7 +62,7 @@ def weight_layers(name, bilm_ops, l2_coef=None,
         if use_top_only:
             layers = tf.split(lm_embeddings, n_lm_layers, axis=1)
             # just the top layer
-            sum_pieces = tf.squeeze(layers[-1], squeeze_dims=1)
+            sum_pieces = tf.squeeze(layers[-1], axis=1)
             # no regularization
             reg = 0.0
         else:
