@@ -86,28 +86,25 @@ def get_word_vector(text, model, num):
     return semantic_fingerprint
 
 
-def get_elmo_vector(texts, batcher, sentence_character_ids, elmo_sentence_input, nrs):
+def get_elmo_vector(sess, texts, batcher, sentence_character_ids, elmo_sentence_input, nrs):
     vectors = []
-    with tf.Session() as sess:
-        # It is necessary to initialize variables once before running inference.
-        sess.run(tf.global_variables_initializer())
 
-        # Create batches of data.
-        sentence_ids = batcher.batch_sentences(texts)
-        print('Sentences in this chunk:', len(texts))
+    # Create batches of data.
+    sentence_ids = batcher.batch_sentences(texts)
+    print('Sentences in this chunk:', len(texts))
 
-        # Compute ELMo representations.
-        elmo_sentence_input_ = sess.run(elmo_sentence_input['weighted_op'],
-                                        feed_dict={sentence_character_ids: sentence_ids})
-        print('ELMo sentence input shape:', elmo_sentence_input_.shape)
+    # Compute ELMo representations.
+    elmo_sentence_input_ = sess.run(elmo_sentence_input['weighted_op'],
+                                    feed_dict={sentence_character_ids: sentence_ids})
+    print('ELMo sentence input shape:', elmo_sentence_input_.shape)
 
-        for sentence, nr in zip(range(len(texts)), nrs):
-            # query_word = texts[sentence][nr]
-            # print(texts[sentence])
-            query_vec = elmo_sentence_input_[sentence, nr, :]
-            query_vec = unitvec(query_vec)
-            # print('Vector shape:', query_vec.shape)
-            vectors.append(query_vec)
+    for sentence, nr in zip(range(len(texts)), nrs):
+        # query_word = texts[sentence][nr]
+        # print(texts[sentence])
+        query_vec = elmo_sentence_input_[sentence, nr, :]
+        query_vec = unitvec(query_vec)
+        # print('Vector shape:', query_vec.shape)
+        vectors.append(query_vec)
     return vectors
 
 
