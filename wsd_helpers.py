@@ -22,7 +22,7 @@ def tokenize(string):
     return tokens
 
 
-def load_dataset(data_file):
+def load_dataset(data_file, max_tokens=350):
     lens = []
     data = csv.reader(open(data_file), delimiter='\t')
     _ = next(data)
@@ -38,7 +38,8 @@ def load_dataset(data_file):
             cur_lemma = lemma
         sent = ' '.join([left, word, right])
         tok_sent = tokenize(sent)
-        # tok_sent = tok_sent[:70]  # We cut long sentences from the right
+        tok_sent = tok_sent[:max_tokens]  # We keep only the first tokens, to reduce batch size
+        sent = ' '.join(tok_sent)
         sent_len = len(tok_sent)
         lens.append(sent_len)
         # if len(tokenize(sent)) > 400:
