@@ -94,7 +94,7 @@ def get_elmo_vector(texts, batcher, sentence_character_ids, elmo_sentence_input,
 
         # Create batches of data.
         sentence_ids = batcher.batch_sentences(texts)
-        print('Sentences:', len(texts))
+        print('Sentences in this chunk:', len(texts))
 
         # Compute ELMo representations.
         elmo_sentence_input_ = sess.run(elmo_sentence_input['weighted_op'],
@@ -168,3 +168,8 @@ def load_elmo_embeddings(directory):
 
     elmo_sentence_input = weight_layers('input', sentence_embeddings_op, use_top_only=True)
     return batcher, sentence_character_ids, elmo_sentence_input
+
+
+def divide_chunks(data, n):
+    for i in range(0, len(data), n):
+        yield data[i:i + n]

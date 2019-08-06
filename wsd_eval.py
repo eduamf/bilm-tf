@@ -11,7 +11,7 @@ from wsd_helpers import *
 warnings.filterwarnings("ignore")
 
 
-def classify(data_file, w2v=None, elmo=None):
+def classify(data_file, w2v=None, elmo=None, max_batch_size=100):
     data = load_dataset(data_file)
     scores = []
 
@@ -25,8 +25,14 @@ def classify(data_file, w2v=None, elmo=None):
             sentences = [tokenize(el[0]) for el in data[word]]
             nums = [el[1] for el in data[word]]
             y = [el[2] for el in data[word]]
-            x_train = get_elmo_vector(
-                sentences, batcher, sentence_character_ids, elmo_sentence_input, nums)
+            input_data = [(s, n) for s, n in zip(sentences, nums)]
+            # Here we divide all the sentences for the current word in several chunks
+            # to to reduce the batch size
+            for chunk in divide_chunks(input_data, max_batch_size):
+                chunk_sentences = [el[0] for el in chunk]
+                chunk_nums = [el[1] for el in chunk]
+                x_train += get_elmo_vector(chunk_sentences, batcher, sentence_character_ids,
+                                           elmo_sentence_input, chunk_nums)
         else:
             for instance in data[word]:
                 sent, num, cl = instance

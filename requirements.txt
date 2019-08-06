@@ -1,3 +1,4 @@
+scikit-learn
 numpy
 tensorflow > 1.10
 smart_open > 1.8.1
