@@ -113,7 +113,6 @@ if __name__ == '__main__':
         eval_scores = classify(data_path, w2v=emb_model)
     elif args.elmo:
         emb_model = load_elmo_embeddings(args.elmo)
-        eval_scores = classify(
-            data_path, elmo=emb_model)
+        eval_scores = classify(data_path, elmo=emb_model)
     else:
-        classify(data_path)
+        eval_scores = classify(data_path)
