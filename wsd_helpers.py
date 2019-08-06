@@ -49,6 +49,7 @@ def load_dataset(data_file, max_tokens=350):
         cl = int(sense_id)
         num = len(tokenize(left))
         word_set.append((sent, num, cl))
+    data_set[cur_lemma] = word_set
     print('Dataset loaded')
     print('Sentences:', len(lens))
     print('Max length:', np.max(lens))
