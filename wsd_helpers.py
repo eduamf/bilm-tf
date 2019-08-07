@@ -92,12 +92,12 @@ def get_elmo_vector(sess, texts, batcher, sentence_character_ids, elmo_sentence_
 
     # Create batches of data.
     sentence_ids = batcher.batch_sentences(texts)
-    print('Sentences in this chunk:', len(texts))
+    print('Sentences in this chunk:', len(texts), file=sys.stderr)
 
     # Compute ELMo representations.
     elmo_sentence_input_ = sess.run(elmo_sentence_input['weighted_op'],
                                     feed_dict={sentence_character_ids: sentence_ids})
-    print('ELMo sentence input shape:', elmo_sentence_input_.shape)
+    print('ELMo sentence input shape:', elmo_sentence_input_.shape, file=sys.stderr)
 
     for sentence, nr in zip(range(len(texts)), nrs):
         # query_word = texts[sentence][nr]
@@ -105,6 +105,28 @@ def get_elmo_vector(sess, texts, batcher, sentence_character_ids, elmo_sentence_
         query_vec = elmo_sentence_input_[sentence, nr, :]
         query_vec = unitvec(query_vec)
         # print('Vector shape:', query_vec.shape)
+        vectors.append(query_vec)
+    return vectors
+
+def get_elmo_vector_average(sess, texts, batcher, sentence_character_ids, elmo_sentence_input, nrs):
+    vectors = []
+
+    # Create batches of data.
+    sentence_ids = batcher.batch_sentences(texts)
+    print('Sentences in this chunk:', len(texts), file=sys.stderr)
+
+    # Compute ELMo representations.
+    elmo_sentence_input_ = sess.run(elmo_sentence_input['weighted_op'],
+                                    feed_dict={sentence_character_ids: sentence_ids})
+    print('ELMo sentence input shape:', elmo_sentence_input_.shape, file=sys.stderr)
+
+    for sentence in range(len(texts)):
+        sent_vec = np.zeros((elmo_sentence_input_.shape[1], elmo_sentence_input_.shape[2]))
+        for word_vec in enumerate(elmo_sentence_input_[sentence, :, :]):
+            sent_vec[word_vec[0], :] = word_vec[1]
+        semantic_fingerprint = np.sum(sent_vec, axis=0)
+        semantic_fingerprint = np.divide(semantic_fingerprint, sent_vec.shape[0])
+        query_vec = unitvec(semantic_fingerprint)
         vectors.append(query_vec)
     return vectors
 
