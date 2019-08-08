@@ -205,7 +205,7 @@ class LanguageModel(object):
 
                     # activation
                     conv = activation(conv)
-                    conv = tf.squeeze(conv, squeeze_dims=[2])
+                    conv = tf.squeeze(conv, axis=[2])
 
                     convolutions.append(conv)
 
@@ -507,7 +507,7 @@ class LanguageModel(object):
                     #   softmax internally
                     losses = tf.nn.sparse_softmax_cross_entropy_with_logits(
                         logits=output_scores,
-                        labels=tf.squeeze(next_token_id_flat, squeeze_dims=[1])
+                        labels=tf.squeeze(next_token_id_flat, axis=[1])
                     )
 
             self.individual_losses.append(tf.reduce_mean(losses))

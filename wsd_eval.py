@@ -5,13 +5,14 @@ import argparse
 import warnings
 from collections import Counter
 from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import cross_validate
 from wsd_helpers import *
 
 warnings.filterwarnings("ignore")
 
 
-def classify(data_file, w2v=None, elmo=None, max_batch_size=30):
+def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
     data = load_dataset(data_file)
     scores = []
 
@@ -54,8 +55,11 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30):
         classes = Counter(y)
         print('Distribution of classes in the whole sample:', dict(classes))
 
-        clf = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto',
+        if algo == 'logreg':
+            clf = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto',
                                  class_weight='balanced')
+        elif algo == 'mlp':
+            clf = MLPClassifier(hidden_layer_sizes=(200, ), max_iter=500)
         averaging = True  # Do you want to average the cross-validate metrics?
 
         scoring = ['precision_macro', 'recall_macro', 'f1_macro']
