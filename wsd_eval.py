@@ -79,13 +79,13 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30):
         if averaging:
             print("Average Precision on 5-fold cross-validation: %0.3f (+/- %0.3f)" % (
                 cv_scores['test_precision_macro'].mean(),
-                cv_scores['test_precision_macro'].std() * 2), file=sys.stderr)
+                cv_scores['test_precision_macro'].std() * 2))
             print("Average Recall on 5-fold cross-validation: %0.3f (+/- %0.3f)" % (
                 cv_scores['test_recall_macro'].mean(),
-                cv_scores['test_recall_macro'].std() * 2), file=sys.stderr)
+                cv_scores['test_recall_macro'].std() * 2))
             print("Average F1 on 5-fold cross-validation: %0.3f (+/- %0.3f)" % (
                 cv_scores['test_f1_macro'].mean(),
-                cv_scores['test_f1_macro'].std() * 2), file=sys.stderr)
+                cv_scores['test_f1_macro'].std() * 2))
         else:
             print("Precision values on 5-fold cross-validation:", file=sys.stderr)
             print(cv_scores['test_precision_macro'], file=sys.stderr)
@@ -96,6 +96,7 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30):
 
         print('\n')
 
+    print('=====')
     print('Average precision value for all words: %0.3f (+/- %0.3f)' %
           (float(np.mean([x[0] for x in scores])), np.std([x[0] for x in scores]) * 2))
     print('Average recall value for all words: %0.3f (+/- %0.3f)' %
