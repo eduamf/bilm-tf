@@ -1,3 +1,4 @@
+import sys
 import json
 import h5py
 import numpy as np
@@ -483,9 +484,9 @@ class BidirectionalLanguageModelGraph(object):
         proj_clip = self.options['lstm'].get('proj_clip')
         use_skip_connections = self.options['lstm']['use_skip_connections']
         if use_skip_connections:
-            print("USING SKIP CONNECTIONS")
+            print("USING SKIP CONNECTIONS", file=sys.stderr)
         else:
-            print("NOT USING SKIP CONNECTIONS")
+            print("NOT USING SKIP CONNECTIONS", file=sys.stderr)
 
         # the sequence lengths from input mask
         if self.use_character_inputs:

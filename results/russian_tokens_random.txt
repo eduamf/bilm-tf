@@ -1,0 +1,171 @@
+Dataset loaded
+Sentences: 2274
+Max length: 28
+Average length: 24.540017590149517
+Standard deviation: 2.0622308624054906
+=====
+акция
+=====
+Distribution of classes in the whole sample: {1: 122, 2: 28}
+Average Precision on 5-fold cross-validation: 0.568 (+/- 0.183)
+Average Recall on 5-fold cross-validation: 0.572 (+/- 0.170)
+Average F1 on 5-fold cross-validation: 0.559 (+/- 0.169)
+
+
+=====
+гипербола
+=====
+Distribution of classes in the whole sample: {1: 131, 2: 18}
+Average Precision on 5-fold cross-validation: 0.464 (+/- 0.069)
+Average Recall on 5-fold cross-validation: 0.486 (+/- 0.056)
+Average F1 on 5-fold cross-validation: 0.465 (+/- 0.041)
+
+
+=====
+град
+=====
+Distribution of classes in the whole sample: {1: 28, 2: 29, 3: 80}
+Average Precision on 5-fold cross-validation: 0.415 (+/- 0.145)
+Average Recall on 5-fold cross-validation: 0.410 (+/- 0.136)
+Average F1 on 5-fold cross-validation: 0.397 (+/- 0.154)
+
+
+=====
+гусеница
+=====
+Distribution of classes in the whole sample: {1: 76, 2: 70}
+Average Precision on 5-fold cross-validation: 0.612 (+/- 0.243)
+Average Recall on 5-fold cross-validation: 0.610 (+/- 0.234)
+Average F1 on 5-fold cross-validation: 0.606 (+/- 0.235)
+
+
+=====
+домино
+=====
+Distribution of classes in the whole sample: {1: 27, 2: 104}
+Average Precision on 5-fold cross-validation: 0.501 (+/- 0.231)
+Average Recall on 5-fold cross-validation: 0.502 (+/- 0.211)
+Average F1 on 5-fold cross-validation: 0.496 (+/- 0.212)
+
+
+=====
+кабачок
+=====
+Distribution of classes in the whole sample: {1: 89, 3: 15, 2: 44}
+Average Precision on 5-fold cross-validation: 0.326 (+/- 0.082)
+Average Recall on 5-fold cross-validation: 0.324 (+/- 0.103)
+Average F1 on 5-fold cross-validation: 0.322 (+/- 0.086)
+
+
+=====
+капот
+=====
+Distribution of classes in the whole sample: {1: 124, 2: 24}
+Average Precision on 5-fold cross-validation: 0.463 (+/- 0.099)
+Average Recall on 5-fold cross-validation: 0.468 (+/- 0.086)
+Average F1 on 5-fold cross-validation: 0.462 (+/- 0.090)
+
+
+=====
+карьер
+=====
+Distribution of classes in the whole sample: {1: 39, 2: 78}
+Average Precision on 5-fold cross-validation: 0.580 (+/- 0.218)
+Average Recall on 5-fold cross-validation: 0.564 (+/- 0.174)
+Average F1 on 5-fold cross-validation: 0.558 (+/- 0.177)
+
+
+=====
+кок
+=====
+Distribution of classes in the whole sample: {1: 18, 2: 28}
+Average Precision on 5-fold cross-validation: 0.406 (+/- 0.230)
+Average Recall on 5-fold cross-validation: 0.457 (+/- 0.134)
+Average F1 on 5-fold cross-validation: 0.423 (+/- 0.188)
+
+
+=====
+крона
+=====
+Distribution of classes in the whole sample: {1: 79, 2: 57}
+Average Precision on 5-fold cross-validation: 0.556 (+/- 0.159)
+Average Recall on 5-fold cross-validation: 0.552 (+/- 0.145)
+Average F1 on 5-fold cross-validation: 0.543 (+/- 0.164)
+
+
+=====
+круп
+=====
+Distribution of classes in the whole sample: {1: 72, 2: 16}
+Average Precision on 5-fold cross-validation: 0.393 (+/- 0.015)
+Average Recall on 5-fold cross-validation: 0.410 (+/- 0.069)
+Average F1 on 5-fold cross-validation: 0.401 (+/- 0.037)
+
+
+=====
+мандарин
+=====
+Distribution of classes in the whole sample: {1: 109, 2: 28}
+Average Precision on 5-fold cross-validation: 0.500 (+/- 0.060)
+Average Recall on 5-fold cross-validation: 0.501 (+/- 0.069)
+Average F1 on 5-fold cross-validation: 0.494 (+/- 0.063)
+
+
+=====
+рок
+=====
+Distribution of classes in the whole sample: {1: 34, 2: 44}
+Average Precision on 5-fold cross-validation: 0.494 (+/- 0.308)
+Average Recall on 5-fold cross-validation: 0.499 (+/- 0.294)
+Average F1 on 5-fold cross-validation: 0.486 (+/- 0.292)
+
+
+=====
+слог
+=====
+Distribution of classes in the whole sample: {1: 79, 2: 71}
+Average Precision on 5-fold cross-validation: 0.504 (+/- 0.212)
+Average Recall on 5-fold cross-validation: 0.501 (+/- 0.204)
+Average F1 on 5-fold cross-validation: 0.494 (+/- 0.198)
+
+
+=====
+стопка
+=====
+Distribution of classes in the whole sample: {1: 98, 2: 51}
+Average Precision on 5-fold cross-validation: 0.557 (+/- 0.197)
+Average Recall on 5-fold cross-validation: 0.566 (+/- 0.198)
+Average F1 on 5-fold cross-validation: 0.543 (+/- 0.210)
+
+
+=====
+таз
+=====
+Distribution of classes in the whole sample: {1: 86, 2: 53}
+Average Precision on 5-fold cross-validation: 0.538 (+/- 0.128)
+Average Recall on 5-fold cross-validation: 0.536 (+/- 0.131)
+Average F1 on 5-fold cross-validation: 0.525 (+/- 0.127)
+
+
+=====
+такса
+=====
+Distribution of classes in the whole sample: {1: 80, 2: 48}
+Average Precision on 5-fold cross-validation: 0.528 (+/- 0.113)
+Average Recall on 5-fold cross-validation: 0.529 (+/- 0.110)
+Average F1 on 5-fold cross-validation: 0.524 (+/- 0.114)
+
+
+=====
+шах
+=====
+Distribution of classes in the whole sample: {1: 87, 2: 10}
+Average Precision on 5-fold cross-validation: 0.443 (+/- 0.010)
+Average Recall on 5-fold cross-validation: 0.453 (+/- 0.071)
+Average F1 on 5-fold cross-validation: 0.448 (+/- 0.040)
+
+
+=====
+Average precision value for all words: 0.492 (+/- 0.145)
+Average recall value for all words: 0.497 (+/- 0.136)
+Average F1 value for all words: 0.486 (+/- 0.136)
