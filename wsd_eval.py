@@ -89,7 +89,6 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
             else:
                 # No error; stop the loop
                 break
-
         scores.append([cv_scores['test_precision_macro'].mean(),
                        cv_scores['test_recall_macro'].mean(), cv_scores['test_f1_macro'].mean()])
         if averaging:
