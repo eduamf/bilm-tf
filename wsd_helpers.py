@@ -10,6 +10,7 @@ import logging
 import json
 import re
 import os
+import operator
 from smart_open import open
 import tensorflow as tf
 from bilm import Batcher, BidirectionalLanguageModel, weight_layers
@@ -29,8 +30,17 @@ def load_dataset(data_file, max_tokens=350):
     data_set = {}
     cur_lemma = None
     word_set = []
+    senses_dic = {}
+    mfs_dic = {}
     for row in data:
         i, lemma, sense_id, left, word, right, senses = row
+        if lemma in senses_dic:
+            try:
+                senses_dic[lemma][sense_id] += 1
+            except KeyError:
+                senses_dic[lemma][sense_id] = 1
+        else:
+            senses_dic[lemma] = {sense_id: 1}
         if lemma != cur_lemma:
             if len(word_set) > 0:
                 data_set[cur_lemma] = word_set
@@ -55,7 +65,10 @@ def load_dataset(data_file, max_tokens=350):
     print('Max length:', np.max(lens))
     print('Average length:', np.average(lens))
     print('Standard deviation:', np.std(lens))
-    return data_set
+    for word in senses_dic:
+        mfs = max(senses_dic[word].items(), key=operator.itemgetter(1))[0]
+        mfs_dic[word] = mfs
+    return data_set, mfs_dic
 
 
 def get_dummy_vector():

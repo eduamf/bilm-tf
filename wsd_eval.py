@@ -4,6 +4,7 @@
 import argparse
 import warnings
 from collections import Counter
+from sklearn.metrics import classification_report, f1_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import cross_validate
@@ -13,8 +14,9 @@ warnings.filterwarnings("ignore")
 
 
 def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
-    data = load_dataset(data_file)
+    data, mfs_dic = load_dataset(data_file)
     scores = []
+    f_scores = []
 
     # data looks like {w1 = [[w1 context1, w1 context2, ...], [w2 context1, w2 context2, ...]], ...}
     for word in data:
@@ -44,8 +46,14 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
             print('=====')
             print('%s' % word)
             print('=====')
+            tp = 0
+            mfs = int(mfs_dic[word])
+            print('MFS', mfs)
+            examples = len(data[word])
             for instance in data[word]:
                 sent, num, cl = instance
+                if cl == mfs:
+                    tp += 1
                 if w2v:
                     vect = get_word_vector(tokenize(sent), w2v, num)
                 else:
@@ -53,6 +61,10 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
                 x_train.append(vect)
                 y.append(cl)
         classes = Counter(y)
+        f = f1_score(y, [int(mfs_dic[word])]*examples, average='macro')
+        f_scores.append(f)
+        print('F1 score is ', f)
+        print('TP and all examples', tp, examples)
         print('Distribution of classes in the whole sample:', dict(classes))
 
         if algo == 'logreg':
@@ -107,6 +119,8 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
           (float(np.mean([x[1] for x in scores])), np.std([x[1] for x in scores]) * 2))
     print('Average F1 value for all words: %0.3f (+/- %0.3f)' %
           (float(np.mean([x[2] for x in scores])), np.std([x[2] for x in scores]) * 2))
+    print('Average F1 value for all words with MFS: %0.3f (+/- %0.3f)' %
+          (float(np.mean(f_scores)), np.std(f_scores) * 2))
     return scores
 
 
