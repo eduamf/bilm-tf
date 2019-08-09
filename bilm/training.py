@@ -743,10 +743,8 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         histogram_summaries.extend(
             summary_gradient_updates(grads, opt, lr))
 
-        saver = tf.train.Saver(tf.global_variables(), max_to_keep=2)
-        summary_op = tf.summary.merge(
-            [perplexity_summmary] + norm_summaries
-        )
+        saver = tf.compat.v1.train.Saver(tf.global_variables(), max_to_keep=2)
+        summary_op = tf.compat.v1.summary.merge([perplexity_summmary] + norm_summaries)
         hist_summary_op = tf.summary.merge(histogram_summaries)
 
         init = tf.initialize_all_variables()
@@ -762,7 +760,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             loader = tf.train.Saver()
             loader.restore(sess, restart_ckpt_file)
 
-        summary_writer = tf.summary.FileWriter(tf_log_dir, sess.graph)
+        summary_writer = tf.compat.v1.summary.FileWriter(tf_log_dir, sess.graph)
 
         # For each batch:
         # Get a batch of data from the generator. The generator will
