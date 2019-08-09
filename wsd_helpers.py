@@ -108,7 +108,8 @@ def get_elmo_vector(sess, texts, batcher, sentence_character_ids, elmo_sentence_
         vectors.append(query_vec)
     return vectors
 
-def get_elmo_vector_average(sess, texts, batcher, sentence_character_ids, elmo_sentence_input, nrs):
+
+def get_elmo_vector_average(sess, texts, batcher, sentence_character_ids, elmo_sentence_input):
     vectors = []
 
     # Create batches of data.

@@ -33,6 +33,8 @@ Ensure the tests pass in your environment by running:
 python -m unittest discover tests/
 ```
 
+It works even without installation, but you need to create a simlink to the `bilm` directory in the `bin` directory.
+
 ## Installing with Docker
 
 To run the image, you must use nvidia-docker, because this repository

@@ -56,9 +56,9 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
         print('Distribution of classes in the whole sample:', dict(classes))
 
         if algo == 'logreg':
-            clf = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto',
-                                 class_weight='balanced')
-        elif algo == 'mlp':
+            clf = LogisticRegression(
+                solver='lbfgs', max_iter=1000, multi_class='auto', class_weight='balanced')
+        else:
             clf = MLPClassifier(hidden_layer_sizes=(200, ), max_iter=500)
         averaging = True  # Do you want to average the cross-validate metrics?
 
