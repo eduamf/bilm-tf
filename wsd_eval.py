@@ -60,11 +60,11 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
                     vect = get_dummy_vector()
                 x_train.append(vect)
                 y.append(cl)
+            f = f1_score(y, [int(mfs_dic[word])]*examples, average='macro')
+            f_scores.append(f)
+            print('F1 score is ', f)
+            print('TP and all examples', tp, examples)
         classes = Counter(y)
-        f = f1_score(y, [int(mfs_dic[word])]*examples, average='macro')
-        f_scores.append(f)
-        print('F1 score is ', f)
-        print('TP and all examples', tp, examples)
         print('Distribution of classes in the whole sample:', dict(classes))
 
         if algo == 'logreg':
