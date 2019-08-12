@@ -9,6 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import cross_validate
 from wsd_helpers import *
+import random
 
 warnings.filterwarnings("ignore")
 
@@ -17,6 +18,7 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
     data, mfs_dic = load_dataset(data_file)
     scores = []
     f_scores = []
+    random_f_scores = []
 
     # data looks like {w1 = [[w1 context1, w1 context2, ...], [w2 context1, w2 context2, ...]], ...}
     for word in data:
@@ -64,6 +66,12 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
             f_scores.append(f)
             print('F1 score is ', f)
             print('TP and all examples', tp, examples)
+            all_senses = list(set(y))
+            f_random = f1_score(y, [random.choice(all_senses) for ex in range(examples)], average='macro')
+            print('Random F1 score is ', f_random)
+            random_f_scores.append(f_random)
+
+
         classes = Counter(y)
         print('Distribution of classes in the whole sample:', dict(classes))
 
@@ -120,6 +128,9 @@ def classify(data_file, w2v=None, elmo=None, max_batch_size=30, algo='logreg'):
           (float(np.mean([x[2] for x in scores])), np.std([x[2] for x in scores]) * 2))
     print('Average F1 value for all words with MFS: %0.3f (+/- %0.3f)' %
           (float(np.mean(f_scores)), np.std(f_scores) * 2))
+    print('Average random F1 value for all words: %0.3f (+/- %0.3f)' %
+            (float(np.mean(random_f_scores)), np.std(random_f_scores) * 2))
+
     return scores
 
 
