@@ -9,6 +9,7 @@ import numpy as np
 import os
 import tensorflow as tf
 from .data import Vocabulary, UnicodeCharsVocabulary, InvalidNumberOfCharacters
+import sys
 
 DTYPE = 'float32'
 DTYPE_INT = 'int64'
@@ -869,8 +870,8 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
                 # write the summaries to tensorboard and display perplexity
                 summary_writer.add_summary(ret[1], batch_no)
                 print("Batch %s out of %s, train_perplexity=%s" %
-                      (batch_no, n_batches_total, ret[2]))
-                print("Total time: %s" % (time.time() - t1))
+                      (batch_no, n_batches_total, ret[2]), file=sys.stderr)
+                print("Total time: %s" % (time.time() - t1), file=sys.stderr)
 
             if (batch_no % 1250 == 0) or (batch_no == n_batches_total):
                 # save the model
