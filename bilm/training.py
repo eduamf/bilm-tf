@@ -351,7 +351,7 @@ class LanguageModel(object):
         use_skip_connections = self.options['lstm'].get(
             'use_skip_connections')
         if use_skip_connections:
-            print("USING SKIP CONNECTIONS")
+            print("USING SKIP CONNECTIONS", file=sys.stderr)
 
         lstm_outputs = []
         for lstm_num, lstm_input in enumerate(lstm_inputs):
@@ -779,7 +779,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         n_batches_per_epoch = int(n_train_tokens / n_tokens_per_batch)
         n_batches_total = options['n_epochs'] * n_batches_per_epoch
         print("Training for %s epochs and %s batches" % (
-            options['n_epochs'], n_batches_total))
+            options['n_epochs'], n_batches_total), file=sys.stderr)
 
         # get the initial lstm states
         init_state_tensors = []
