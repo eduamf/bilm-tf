@@ -35,7 +35,7 @@ def main(args):
 
         'lstm': {
             'cell_clip': 3,
-            'dim': 2048,  # Will leave it half-size for the time being
+            'dim': 2048,
             'n_layers': 2,
             'proj_clip': 3,
             'projection_dim': 512,
@@ -43,7 +43,7 @@ def main(args):
 
         'all_clip_norm_val': 10.0,
 
-        'n_epochs': 3,  # Will leave it half-size for the time being
+        'n_epochs': 3,
         'n_train_tokens': n_train_tokens,
         'batch_size': batch_size,
         'n_tokens_vocab': vocab.size,
