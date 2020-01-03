@@ -15,7 +15,7 @@ def main(args):
     vocab = load_vocab(args.vocab_file, 50)
 
     # define the options
-    batch_size = 128  # batch size for each GPU
+    batch_size = 32  # batch size for each GPU
     n_gpus = -1
 
     # number of tokens in training data
@@ -54,7 +54,7 @@ def main(args):
         'batch_size': batch_size,
         'n_tokens_vocab': vocab.size,
         'unroll_steps': 20,
-        'n_negative_samples_batch': 128,
+        'n_negative_samples_batch': 32,
     }
 
     prefix = args.train_prefix
