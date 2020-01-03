@@ -43,4 +43,3 @@ setuptools.setup(
     author_email='allennlp-contact@allenai.org',
     maintainer='Matthew Peters',
 )
-
