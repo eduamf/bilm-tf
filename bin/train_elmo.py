@@ -3,6 +3,7 @@ import argparse
 import warnings
 warnings.filterwarnings("ignore")
 
+import os
 from bilm.data import BidirectionalLMDataset
 from bilm.training import train, load_vocab
 
@@ -70,8 +71,7 @@ if __name__ == '__main__':
     parser.add_argument('--vocab_file', help='Vocabulary file')
     parser.add_argument('--train_prefix', help='Prefix for train files')
     parser.add_argument('--log_file', help='Log file')
-    parser.add_argument('--size', type=int, help='Number of training tokens'
-                        , default=1410521)
+    parser.add_argument('--size', type=int, help='Number of training tokens', default=1410521)
 
     arguments = parser.parse_args()
     main(arguments)
