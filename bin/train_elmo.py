@@ -1,10 +1,17 @@
 import argparse
 
+import warnings
+warnings.filterwarnings("ignore")
+
+import os
 from bilm.data import BidirectionalLMDataset
 from bilm.training import train, load_vocab
 
 
 def main(args):
+    tf_save_dir = args.save_dir
+    tf_log_dir = args.log_dir
+    
     # load the vocab
     vocab = load_vocab(args.vocab_file, 50)
 
@@ -35,10 +42,10 @@ def main(args):
 
         'lstm': {
             'cell_clip': 3,
-            'dim': 2048,
+            'dim': 1024,
             'n_layers': 2,
             'proj_clip': 3,
-            'projection_dim': 512,
+            'projection_dim': 128,
             'use_skip_connections': True},
 
         'all_clip_norm_val': 10.0,
@@ -48,15 +55,13 @@ def main(args):
         'batch_size': batch_size,
         'n_tokens_vocab': vocab.size,
         'unroll_steps': 20,
-        'n_negative_samples_batch': 4096,
+        'n_negative_samples_batch': 128,
     }
 
     prefix = args.train_prefix
     data = BidirectionalLMDataset(prefix, vocab, test=False,
                                   shuffle_on_load=True)
 
-    tf_save_dir = args.save_dir
-    tf_log_dir = args.save_dir
     train(options, data, n_gpus, tf_save_dir, tf_log_dir)
 
 
@@ -65,7 +70,8 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', help='Location of checkpoint files')
     parser.add_argument('--vocab_file', help='Vocabulary file')
     parser.add_argument('--train_prefix', help='Prefix for train files')
-    parser.add_argument('--size', type=int, help='Number of training tokens')
+    parser.add_argument('--vocab_file', help='Vocabulary file')
+    parser.add_argument('--size', type=int, help='Number of training tokens', default=1410521)
 
     arguments = parser.parse_args()
     main(arguments)
