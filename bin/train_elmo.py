@@ -15,8 +15,8 @@ def main(args):
     vocab = load_vocab(args.vocab_file, 50)
 
     # define the options
-    batch_size = 192  # batch size for each GPU
-    n_gpus = 2
+    batch_size = 128  # batch size for each GPU
+    n_gpus = -1
 
     # number of tokens in training data
     n_train_tokens = args.size
