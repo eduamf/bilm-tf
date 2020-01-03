@@ -14,8 +14,10 @@ import sys
 DTYPE = 'float32'
 DTYPE_INT = 'int64'
 
-tf.logging.set_verbosity(tf.logging.INFO)
+tf.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
+#GPU
+q_gpu = True
 
 def print_variable_summary():
     import pprint
@@ -375,17 +377,17 @@ class LanguageModel(object):
                         pass
                     else:
                         # add a skip connection
-                        lstm_cell = tf.nn.rnn_cell.ResidualWrapper(lstm_cell)
+                        lstm_cell = tf.compat.v1.nn.rnn_cell.ResidualWrapper(lstm_cell)
 
                 # add dropout
                 if self.is_training:
-                    lstm_cell = tf.nn.rnn_cell.DropoutWrapper(lstm_cell,
+                    lstm_cell = tf.compat.v1.nn.rnn_cell.DropoutWrapper(lstm_cell,
                                                               input_keep_prob=keep_prob)
 
                 lstm_cells.append(lstm_cell)
 
             if n_lstm_layers > 1:
-                lstm_cell = tf.nn.rnn_cell.MultiRNNCell(lstm_cells)
+                lstm_cell = tf.compat.v1.nn.rnn_cell.MultiRNNCell(lstm_cells)
             else:
                 lstm_cell = lstm_cells[0]
 
@@ -414,7 +416,7 @@ class LanguageModel(object):
                 # add dropout to output
                 lstm_output_flat = tf.nn.dropout(lstm_output_flat,
                                                  keep_prob)
-            tf.add_to_collection('lstm_output_embeddings',
+            tf.compat.v1.add_to_collection('lstm_output_embeddings',
                                  _lstm_output_unpacked)
 
             lstm_outputs.append(lstm_output_flat)
@@ -689,8 +691,14 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             'train_perplexity', [],
             initializer=tf.constant_initializer(0.0), trainable=False)
         norm_summaries = []
-        for k in range(n_gpus):
-            with tf.device('/gpu:%d' % k):
+        n_procs = n_gpus if n_gpus > 0 else 1
+        q_gpu = (n_gpus > 0) 
+        for k in range(n_procs):
+            if q_gpu: 
+                t_device = '/gpu:%d' % k
+            else:
+                t_device = '/cpu:0'
+            with tf.device(t_device):
                 with tf.variable_scope('lm', reuse=k > 0):
                     # calculate the loss for one model replica and get
                     #   lstm states
@@ -714,41 +722,42 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         norm_summaries.extend(norm_summary_ops)
 
         # log the training perplexity
-        train_perplexity = tf.exp(train_perplexity / n_gpus)
-        perplexity_summmary = tf.summary.scalar(
+        train_perplexity = tf.exp(train_perplexity / n_procs)
+        perplexity_summmary = tf.compat.v1.summary.scalar(
             'train_perplexity', train_perplexity)
 
         # some histogram summaries.  all models use the same parameters
         # so only need to summarize one
         histogram_summaries = [
-            tf.summary.histogram('token_embedding', models[0].embedding)
+            tf.compat.v1.summary.histogram('token_embedding', models[0].embedding)
         ]
         # tensors of the output from the LSTM layer
         lstm_out = tf.get_collection('lstm_output_embeddings')
         histogram_summaries.append(
-            tf.summary.histogram('lstm_embedding_0', lstm_out[0]))
+            tf.compat.v1.summary.histogram('lstm_embedding_0', lstm_out[0]))
         if options.get('bidirectional', False):
             # also have the backward embedding
             histogram_summaries.append(
-                tf.summary.histogram('lstm_embedding_1', lstm_out[1]))
+                tf.compat.v1.summary.histogram('lstm_embedding_1', lstm_out[1]))
 
         # apply the gradients to create the training operation
         train_op = opt.apply_gradients(grads, global_step=global_step)
 
         # histograms of variables
         for v in tf.global_variables():
-            histogram_summaries.append(tf.summary.histogram(v.name.replace(":", "_"), v))
+            histogram_summaries.append(tf.compat.v1.summary.histogram(v.name.replace(":", "_"), v))
 
         # get the gradient updates -- these aren't histograms, but we'll
         # only update them when histograms are computed
         histogram_summaries.extend(
             summary_gradient_updates(grads, opt, lr))
 
-        saver = tf.train.Saver(tf.global_variables(), max_to_keep=2)
-        summary_op = tf.summary.merge([perplexity_summmary] + norm_summaries)
-        hist_summary_op = tf.summary.merge(histogram_summaries)
+        saver = tf.compat.v1.train.Saver(tf.global_variables(), max_to_keep=2)
+        summary_op = tf.compat.v1.summary.merge([perplexity_summmary] + norm_summaries)
+        hist_summary_op = tf.compat.v1.summary.merge(histogram_summaries)
 
-        init = tf.initialize_all_variables()
+        #init = tf.initialize_all_variables()
+        init = tf.global_variables_initializer()
 
     # do the training loop
     bidirectional = options.get('bidirectional', False)
@@ -761,11 +770,11 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             loader = tf.train.Saver()
             loader.restore(sess, restart_ckpt_file)
 
-        summary_writer = tf.summary.FileWriter(tf_log_dir, sess.graph)
+        summary_writer = tf.compat.v1.summary.FileWriter(tf_log_dir, sess.graph)
 
         # For each batch:
         # Get a batch of data from the generator. The generator will
-        # yield batches of size batch_size * n_gpus that are sliced
+        # yield batches of size batch_size * n_procs that are sliced
         # and fed for each required placeholer.
         #
         # We also need to be careful with the LSTM states.  We will
@@ -775,7 +784,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         batch_size = options['batch_size']
         unroll_steps = options['unroll_steps']
         n_train_tokens = options.get('n_train_tokens', 768648884)
-        n_tokens_per_batch = batch_size * unroll_steps * n_gpus
+        n_tokens_per_batch = batch_size * unroll_steps * n_procs
         n_batches_per_epoch = int(n_train_tokens / n_tokens_per_batch)
         n_batches_total = options['n_epochs'] * n_batches_per_epoch
         print("Training for %s epochs and %s batches" % (
@@ -824,14 +833,14 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         init_state_values = sess.run(init_state_tensors, feed_dict=feed_dict)
 
         t1 = time.time()
-        data_gen = data.iter_batches(batch_size * n_gpus, unroll_steps)
+        data_gen = data.iter_batches(batch_size * n_procs, unroll_steps)
         for batch_no, batch in enumerate(data_gen, start=1):
 
             # slice the input in the batch for the feed_dict
             x = batch
             feed_dict = {t: v for t, v in zip(
                 init_state_tensors, init_state_values)}
-            for k in range(n_gpus):
+            for k in range(n_procs):
                 model = models[k]
                 start = k * batch_size
                 end = (k + 1) * batch_size
@@ -939,7 +948,7 @@ def clip_grads(grads, options, do_summaries, global_step):
     return ret, summary_ops
 
 
-def test(options, ckpt_file, data, batch_size=256):
+def test(options, ckpt_file, data, batch_size=32, q_gpu=False):
     """
     Get the test set perplexity!
     """
@@ -953,7 +962,11 @@ def test(options, ckpt_file, data, batch_size=256):
 
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
-        with tf.device('/gpu:0'), tf.variable_scope('lm'):
+        if q_gpu:
+            t_device = '/gpu:0'
+        else:
+            t_device = '/cpu:0'
+        with tf.device(t_device), tf.variable_scope('lm'):
             test_options = dict(options)
             # NOTE: the number of tokens we skip in the last incomplete
             # batch is bounded above batch_size * unroll_steps
