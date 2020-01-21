@@ -58,8 +58,7 @@ def main(args):
     }
 
     prefix = args.train_prefix
-    data = BidirectionalLMDataset(prefix, vocab, test=False, 
-                                  shuffle_on_load=False)
+    data = BidirectionalLMDataset(prefix, vocab, test=False, shuffle_on_load=True)
 
     train(options, data, n_gpus, tf_save_dir, tf_log_dir)
 
