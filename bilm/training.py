@@ -83,7 +83,7 @@ class LanguageModel(object):
                                         name='token_ids')
         # the word embeddings
         with tf.device("/cpu:0"):
-            self.embedding_weights = tf.get_variable(
+            self.embedding_weights = tf.compat.v1.get_variable(
                 "embedding", [n_tokens_vocab, projection_dim],
                 dtype=DTYPE,
             )
@@ -150,7 +150,7 @@ class LanguageModel(object):
             DTYPE_INT, shape=(batch_size, unroll_steps, max_chars), name='tokens_characters')
         # the character embeddings
         with tf.device("/cpu:0"):
-            self.embedding_weights = tf.get_variable(
+            self.embedding_weights = tf.compat.v1.get_variable(
                 "char_embed", [n_chars, char_embed_dim],
                 dtype=DTYPE,
                 initializer=tf.random_uniform_initializer(-1.0, 1.0)
@@ -188,12 +188,12 @@ class LanguageModel(object):
                             mean=0.0,
                             stddev=np.sqrt(1.0 / (width * char_embed_dim))
                         )
-                    w = tf.get_variable(
+                    w = tf.compat.v1.get_variable(
                         "W_cnn_%s" % nr_i,
                         [1, width, char_embed_dim, num],
                         initializer=w_init,
                         dtype=DTYPE)
-                    b = tf.get_variable(
+                    b = tf.compat.v1.get_variable(
                         "b_cnn_%s" % nr_i, [num], dtype=DTYPE,
                         initializer=tf.constant_initializer(0.0))
 
@@ -202,7 +202,7 @@ class LanguageModel(object):
                         strides=[1, 1, 1, 1],
                         padding="VALID") + b
                     # now max pool
-                    conv = tf.nn.max_pool(
+                    conv = tf.nn.max_pool2d(
                         conv, [1, 1, max_chars - width + 1, 1],
                         [1, 1, 1, 1], 'VALID')
 
@@ -241,12 +241,12 @@ class LanguageModel(object):
         if use_proj:
             assert n_filters > projection_dim
             with tf.variable_scope('CNN_proj') as scope:
-                weights_proj_cnn = tf.get_variable(
+                weights_proj_cnn = tf.compat.v1.get_variable(
                     "W_proj", [n_filters, projection_dim],
                     initializer=tf.random_normal_initializer(
                         mean=0.0, stddev=np.sqrt(1.0 / n_filters)),
                     dtype=DTYPE)
-                b_proj_cnn = tf.get_variable(
+                b_proj_cnn = tf.compat.v1.get_variable(
                     "b_proj", [projection_dim],
                     initializer=tf.constant_initializer(0.0),
                     dtype=DTYPE)
@@ -262,22 +262,22 @@ class LanguageModel(object):
 
             for i in range(n_highway):
                 with tf.variable_scope('CNN_high_%s' % i) as scope:
-                    weights_carry = tf.get_variable(
+                    weights_carry = tf.compat.v1.get_variable(
                         'W_carry', [highway_dim, highway_dim],
                         # glorit init
                         initializer=tf.random_normal_initializer(
                             mean=0.0, stddev=np.sqrt(1.0 / highway_dim)),
                         dtype=DTYPE)
-                    b_carry = tf.get_variable(
+                    b_carry = tf.compat.v1.get_variable(
                         'b_carry', [highway_dim],
                         initializer=tf.constant_initializer(-2.0),
                         dtype=DTYPE)
-                    weights_transform = tf.get_variable(
+                    weights_transform = tf.compat.v1.get_variable(
                         'W_transform', [highway_dim, highway_dim],
                         initializer=tf.random_normal_initializer(
                             mean=0.0, stddev=np.sqrt(1.0 / highway_dim)),
                         dtype=DTYPE)
-                    b_transform = tf.get_variable(
+                    b_transform = tf.compat.v1.get_variable(
                         'b_transform', [highway_dim],
                         initializer=tf.constant_initializer(0.0),
                         dtype=DTYPE)
@@ -465,12 +465,12 @@ class LanguageModel(object):
             softmax_init = tf.random_normal_initializer(0.0,
                                                         1.0 / np.sqrt(softmax_dim))
             if not self.share_embedding_softmax:
-                self.softmax_W = tf.get_variable(
+                self.softmax_W = tf.compat.v1.get_variable(
                     'W', [n_tokens_vocab, softmax_dim],
                     dtype=DTYPE,
                     initializer=softmax_init
                 )
-            self.softmax_b = tf.get_variable(
+            self.softmax_b = tf.compat.v1.get_variable(
                 'b', [n_tokens_vocab],
                 dtype=DTYPE,
                 initializer=tf.constant_initializer(0.0))
@@ -675,7 +675,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             fout.write(json.dumps(options))
 
     with tf.device('/cpu:0'):
-        global_step = tf.get_variable(
+        global_step = tf.compat.v1.get_variable(
             'global_step', [],
             initializer=tf.constant_initializer(0), trainable=False)
 
@@ -687,7 +687,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         # calculate the gradients on each GPU
         tower_grads = []
         models = []
-        train_perplexity = tf.get_variable(
+        train_perplexity = tf.compat.v1.get_variable(
             'train_perplexity', [],
             initializer=tf.constant_initializer(0.0), trainable=False)
         norm_summaries = []
@@ -744,7 +744,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         train_op = opt.apply_gradients(grads, global_step=global_step)
 
         # histograms of variables
-        for v in tf.global_variables():
+        for v in tf.compat.v1.global_variables():
             histogram_summaries.append(tf.compat.v1.summary.histogram(v.name.replace(":", "_"), v))
 
         # get the gradient updates -- these aren't histograms, but we'll
