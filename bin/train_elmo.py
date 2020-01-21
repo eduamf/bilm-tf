@@ -15,7 +15,7 @@ def main(args):
     vocab = load_vocab(args.vocab_file, 50)
 
     # define the options
-    batch_size = 32  # batch size for each GPU
+    batch_size = 4  # batch size for each GPU
     n_gpus = -1
 
     # number of tokens in training data
@@ -54,12 +54,12 @@ def main(args):
         'batch_size': batch_size,
         'n_tokens_vocab': vocab.size,
         'unroll_steps': 20,
-        'n_negative_samples_batch': 32,
+        'n_negative_samples_batch': 16,
     }
 
     prefix = args.train_prefix
-    data = BidirectionalLMDataset(prefix, vocab, test=False,
-                                  shuffle_on_load=True)
+    data = BidirectionalLMDataset(prefix, vocab, test=False, 
+                                  shuffle_on_load=False)
 
     train(options, data, n_gpus, tf_save_dir, tf_log_dir)
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     parser.add_argument('--vocab_file', help='Vocabulary file')
     parser.add_argument('--save_dir', help='Location of checkpoint files')
     parser.add_argument('--log_dir', help='Log folder')
-    parser.add_argument('--size', type=int, help='Number of training tokens', default=1410521)
+    parser.add_argument('--size', type=int, help='Number of training tokens', default=21100)
 
     arguments = parser.parse_args()
     main(arguments)
