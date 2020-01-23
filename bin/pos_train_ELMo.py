@@ -7,7 +7,7 @@ from bilm import Batcher, BidirectionalLanguageModel, weight_layers
  
 # Location of pretrained LM.  Here we use the test fixtures.
 datadir = os.path.join('swb', 'model')
-vocab_file = os.path.join(datadir, 'vocab.txt')
+vocab_file = os.path.join(datadir, 'vocab_mangas.txt')
 options_file = os.path.join(datadir, 'options.json')
 weight_file = os.path.join(datadir, 'swb_weights.hdf5')
  
