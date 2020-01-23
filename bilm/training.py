@@ -79,7 +79,7 @@ class LanguageModel(object):
         projection_dim = self.options['lstm']['projection_dim']
 
         # the input token_ids and word embeddings
-        self.token_ids = tf.placeholder(DTYPE_INT, shape=(batch_size, unroll_steps),
+        self.token_ids = tf.compat.v1.placeholder(DTYPE_INT, shape=(batch_size, unroll_steps),
                                         name='token_ids')
         # the word embeddings
         with tf.device("/cpu:0"):
@@ -92,7 +92,7 @@ class LanguageModel(object):
         # if a bidirectional LM then make placeholders for reverse
         # model and embeddings
         if self.bidirectional:
-            self.token_ids_reverse = tf.placeholder(DTYPE_INT, shape=(batch_size, unroll_steps),
+            self.token_ids_reverse = tf.compat.v1.placeholder(DTYPE_INT, shape=(batch_size, unroll_steps),
                                                     name='token_ids_reverse')
             with tf.device("/cpu:0"):
                 self.embedding_reverse = tf.nn.embedding_lookup(
@@ -146,7 +146,7 @@ class LanguageModel(object):
             activation = tf.nn.relu
 
         # the input character ids 
-        self.tokens_characters = tf.placeholder(
+        self.tokens_characters = tf.compat.v1.placeholder(
             DTYPE_INT, shape=(batch_size, unroll_steps, max_chars), name='tokens_characters')
         # the character embeddings
         with tf.device("/cpu:0"):
@@ -160,7 +160,7 @@ class LanguageModel(object):
                 self.embedding_weights, self.tokens_characters)
 
             if self.bidirectional:
-                self.tokens_characters_reverse = tf.placeholder(
+                self.tokens_characters_reverse = tf.compat.v1.placeholder(
                     DTYPE_INT, shape=(batch_size, unroll_steps, max_chars),
                     name='tokens_characters_reverse')
                 self.char_embedding_reverse = tf.nn.embedding_lookup(
@@ -168,7 +168,7 @@ class LanguageModel(object):
 
         # the convolutions
         def make_convolutions(inp, reuse_val):
-            with tf.variable_scope('CNN', reuse=reuse_val) as conv_scope:
+            with tf.compat.v1.variable_scope('CNN', reuse=reuse_val) as conv_scope:
                 convolutions = []
                 for nr_i, (width, num) in enumerate(filters):
                     if cnn_options['activation'] == 'relu':
@@ -215,7 +215,7 @@ class LanguageModel(object):
             return tf.concat(convolutions, 2)
 
         # for first model, this is False, for others it's True
-        reuse = tf.get_variable_scope().reuse
+        reuse = tf.compat.v1.get_variable_scope().reuse
         embedding = make_convolutions(self.char_embedding, reuse)
 
         self.token_embedding_layers = [embedding]
@@ -240,7 +240,7 @@ class LanguageModel(object):
         # set up weights for projection
         if use_proj:
             assert n_filters > projection_dim
-            with tf.variable_scope('CNN_proj') as scope:
+            with tf.compat.v1.variable_scope('CNN_proj') as scope:
                 weights_proj_cnn = tf.compat.v1.get_variable(
                     "W_proj", [n_filters, projection_dim],
                     initializer=tf.random_normal_initializer(
@@ -261,7 +261,7 @@ class LanguageModel(object):
             highway_dim = n_filters
 
             for i in range(n_highway):
-                with tf.variable_scope('CNN_high_%s' % i) as scope:
+                with tf.compat.v1.variable_scope('CNN_high_%s' % i) as scope:
                     weights_carry = tf.compat.v1.get_variable(
                         'W_carry', [highway_dim, highway_dim],
                         # glorit init
@@ -397,7 +397,7 @@ class LanguageModel(object):
                 # NOTE: this variable scope is for backward compatibility
                 # with existing models...
                 if self.bidirectional:
-                    with tf.variable_scope('RNN_%s' % lstm_num):
+                    with tf.compat.v1.variable_scope('RNN_%s' % lstm_num):
                         _lstm_output_unpacked, final_state = tf.nn.static_rnn(
                             lstm_cell,
                             tf.unstack(lstm_input, axis=1),
@@ -439,7 +439,7 @@ class LanguageModel(object):
         # DEFINE next_token_id and *_reverse placeholders for the gold input
         def _get_next_token_placeholders(suffix):
             name = 'next_token_id' + suffix
-            idplaceholder = tf.placeholder(DTYPE_INT,
+            idplaceholder = tf.compat.v1.placeholder(DTYPE_INT,
                                            shape=(batch_size, unroll_steps),
                                            name=name)
             return idplaceholder
@@ -460,7 +460,7 @@ class LanguageModel(object):
             # softmax_W is just the embedding layer
             self.softmax_W = self.embedding_weights
 
-        with tf.variable_scope('softmax'), tf.device('/cpu:0'):
+        with tf.compat.v1.variable_scope('softmax'), tf.device('/cpu:0'):
             # Glorit init (std=(1.0 / sqrt(fan_in))
             softmax_init = tf.random_normal_initializer(0.0,
                                                         1.0 / np.sqrt(softmax_dim))
@@ -586,7 +586,7 @@ def summary_gradient_updates(grads, opt, lr):
     # strategy:
     # make a dict of variable name -> [variable, grad, adagrad slot]
     vars_grads = {}
-    for v in tf.trainable_variables():
+    for v in tf.compat.v1.trainable_variables():
         vars_grads[v.name] = [v, None, None]
     for g, v in grads:
         vars_grads[v.name][1] = g
@@ -614,7 +614,7 @@ def summary_gradient_updates(grads, opt, lr):
         values_norm = tf.sqrt(tf.reduce_sum(v * v)) + 1.0e-7
         updates_norm = tf.sqrt(tf.reduce_sum(updates * updates))
         ret.append(
-            tf.summary.scalar('UPDATE/' + vname.replace(":", "_"), updates_norm / values_norm))
+            tf.compat.v1.summary.scalar('UPDATE/' + vname.replace(":", "_"), updates_norm / values_norm))
 
     return ret
 
@@ -631,7 +631,7 @@ def _deduplicate_indexed_slices(values, indices):
       `values` slices associated with each unique index.
     """
     unique_indices, new_index_positions = tf.unique(indices)
-    summed_values = tf.unsorted_segment_sum(
+    summed_values = tf.math.unsorted_segment_sum(
         values, new_index_positions,
         tf.shape(unique_indices)[0])
     return summed_values, unique_indices
@@ -681,7 +681,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
 
         # set up the optimizer
         lr = options.get('learning_rate', 0.2)
-        opt = tf.train.AdagradOptimizer(learning_rate=lr,
+        opt = tf.compat.v1.train.AdagradOptimizer(learning_rate=lr,
                                         initial_accumulator_value=1.0)
 
         # calculate the gradients on each GPU
@@ -699,7 +699,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             else:
                 t_device = '/cpu:0'
             with tf.device(t_device):
-                with tf.variable_scope('lm', reuse=k > 0):
+                with tf.compat.v1.variable_scope('lm', reuse=k > 0):
                     # calculate the loss for one model replica and get
                     #   lstm states
                     model = LanguageModel(options, True)
@@ -732,7 +732,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             tf.compat.v1.summary.histogram('token_embedding', models[0].embedding)
         ]
         # tensors of the output from the LSTM layer
-        lstm_out = tf.get_collection('lstm_output_embeddings')
+        lstm_out = tf.compat.v1.get_collection('lstm_output_embeddings')
         histogram_summaries.append(
             tf.compat.v1.summary.histogram('lstm_embedding_0', lstm_out[0]))
         if options.get('bidirectional', False):
@@ -757,11 +757,11 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         hist_summary_op = tf.compat.v1.summary.merge(histogram_summaries)
 
         #init = tf.initialize_all_variables()
-        init = tf.global_variables_initializer()
+        init = tf.compat.v1.global_variables_initializer()
 
     # do the training loop
     bidirectional = options.get('bidirectional', False)
-    with tf.Session(config=tf.ConfigProto(
+    with tf.compat.v1.Session(config=tf.ConfigProto(
             allow_soft_placement=True)) as sess:
         sess.run(init)
 
@@ -897,24 +897,24 @@ def clip_by_global_norm_summary(t_list, clip_norm, norm_name, variables):
 
     # compute norms
     # use global_norm with one element to handle IndexedSlices vs dense
-    norms = [tf.global_norm([t]) for t in t_list]
+    norms = [tf.linalg.global_norm([t]) for t in t_list]
 
     # summary ops before clipping
     summary_ops = []
     for ns, v in zip(norms, variables):
         name = 'norm_pre_clip/' + v.name.replace(":", "_")
-        summary_ops.append(tf.summary.scalar(name, ns))
+        summary_ops.append(tf.compat.v1.summary.scalar(name, ns))
 
     # clip
     clipped_t_list, tf_norm = tf.clip_by_global_norm(t_list, clip_norm)
 
     # summary ops after clipping
-    norms_post = [tf.global_norm([t]) for t in clipped_t_list]
+    norms_post = [tf.linalg.global_norm([t]) for t in clipped_t_list]
     for ns, v in zip(norms_post, variables):
         name = 'norm_post_clip/' + v.name.replace(":", "_")
-        summary_ops.append(tf.summary.scalar(name, ns))
+        summary_ops.append(tf.compat.v1.summary.scalar(name, ns))
 
-    summary_ops.append(tf.summary.scalar(norm_name, tf_norm))
+    summary_ops.append(tf.compat.v1.summary.scalar(norm_name, tf_norm))
 
     return clipped_t_list, tf_norm, summary_ops
 
@@ -960,13 +960,13 @@ def test(options, ckpt_file, data, batch_size=32, q_gpu=False):
 
     unroll_steps = 1
 
-    config = tf.ConfigProto(allow_soft_placement=True)
+    config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
         if q_gpu:
             t_device = '/gpu:0'
         else:
             t_device = '/cpu:0'
-        with tf.device(t_device), tf.variable_scope('lm'):
+        with tf.device(t_device), tf.compat.v1.variable_scope('lm'):
             test_options = dict(options)
             # NOTE: the number of tokens we skip in the last incomplete
             # batch is bounded above batch_size * unroll_steps
@@ -1057,7 +1057,7 @@ def tag(options, ckpt_file, shards, datasets, batch_size=1):
 
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
-        with tf.device('/gpu:0'), tf.variable_scope('lm'):
+        with tf.device('/gpu:0'), tf.compat.v1.variable_scope('lm'):
             test_options = dict(options)
             # NOTE: the number of tokens we skip in the last incomplete
             # batch is bounded above batch_size * unroll_steps
@@ -1177,14 +1177,14 @@ def dump_weights(tf_save_dir, outfile):
 
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
-        with tf.variable_scope('lm'):
+        with tf.compat.v1.variable_scope('lm'):
             model = LanguageModel(options, False)
             # we use the "Saver" class to load the variables
             loader = tf.train.Saver()
             loader.restore(sess, ckpt_file)
 
         with h5py.File(outfile, 'w') as fout:
-            for v in tf.trainable_variables():
+            for v in tf.compat.v1.trainable_variables():
                 if v.name.find('softmax') >= 0:
                     # don't dump these
                     continue
