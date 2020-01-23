@@ -273,7 +273,7 @@ class BidirectionalLanguageModelGraph(object):
         else:
             self._n_tokens_vocab = None
 
-        with tf.variable_scope('bilm', custom_getter=custom_getter):
+        with tf.compat.v1.variable_scope('bilm', custom_getter=custom_getter):
             self._build()
 
     def _build(self):
@@ -330,7 +330,7 @@ class BidirectionalLanguageModelGraph(object):
 
         # the character embeddings
         with tf.device("/cpu:0"):
-            self.embedding_weights = tf.get_variable(
+            self.embedding_weights = tf.compat.v1.get_variable(
                 "char_embed", [n_chars, char_embed_dim],
                 dtype=DTYPE,
                 initializer=tf.random_uniform_initializer(-1.0, 1.0)
@@ -656,7 +656,7 @@ def dump_bilm_embeddings(vocab_file, dataset_file, options_file,
 
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.compat.v1.global_variables_initializer())
         sentence_id = 0
         with open(dataset_file, 'r') as fin, h5py.File(outfile, 'w') as fout:
             for line in fin:
