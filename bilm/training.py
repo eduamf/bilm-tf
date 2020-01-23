@@ -21,7 +21,7 @@ q_gpu = True
 
 def print_variable_summary():
     import pprint
-    variables = sorted([[v.name, v.get_shape()] for v in tf.global_variables()])
+    variables = sorted([[v.name, v.get_shape()] for v in tf.compat.v1.global_variables()])
     pprint.pprint(variables)
 
 
@@ -761,7 +761,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
 
     # do the training loop
     bidirectional = options.get('bidirectional', False)
-    with tf.compat.v1.Session(config=tf.ConfigProto(
+    with tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(
             allow_soft_placement=True)) as sess:
         sess.run(init)
 
