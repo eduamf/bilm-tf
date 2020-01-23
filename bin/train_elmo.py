@@ -26,7 +26,7 @@ def main(args):
 
         'char_cnn': {'activation': 'relu',
                      'embedding': {'dim': 16},
-                     'filters': [[1, 32],
+                     'filters': [[1, 16],
                                  [2, 32],
                                  [3, 64],
                                  [4, 128],
@@ -35,7 +35,7 @@ def main(args):
                                  [7, 1024]],
                      'max_characters_per_token': 50,
                      'n_characters': 261,
-                     'n_highway': 2},
+                     'n_highway': 1},
 
         'dropout': 0.1,
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     parser.add_argument('--vocab_file', help='Vocabulary file')
     parser.add_argument('--save_dir', help='Location of checkpoint files')
     parser.add_argument('--log_dir', help='Log folder')
-    parser.add_argument('--size', type=int, help='Number of training tokens', default=21100)
+    parser.add_argument('--size', type=int, help='Number of training tokens', default=20750)
 
     arguments = parser.parse_args()
     main(arguments)
