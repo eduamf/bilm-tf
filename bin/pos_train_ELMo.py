@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['AUTOGRAPH_VERBOSITY'] = '10'
 import tensorflow as tf
 import numpy as np
 import scipy.spatial.distance as ds
@@ -7,14 +8,16 @@ from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 
 # python bin/dump_weights.py --save_dir swb/checkpoint --outfile swb/model/manga_weights.hdf5
 
+T = 2
+
 # Incluído para limpar o escopo
 tf.reset_default_graph()
 
 # Location of pretrained LM.  Here we use the test fixtures.
 datadir = os.path.join('swb', 'model')
-vocab_file = os.path.join(datadir, 'vocab_manga.txt')
-options_file = os.path.join(datadir, 'options.json')
-weight_file = os.path.join(datadir, 'manga_weights.hdf5')
+vocab_file = os.path.join(datadir, 'manga_vocab.txt' if T==1 else 'ombra_vocab.txt')
+options_file = os.path.join(datadir, 'manga_options.json' if T==1 else 'ombra_options.json')
+weight_file = os.path.join(datadir, 'manga_weights.hdf5' if T==1 else 'ombra_weights.hdf5')
  
 # Create a Batcher to map text to character ids.
 batcher = Batcher(vocab_file, 50)
@@ -32,11 +35,19 @@ context_embeddings_op = bilm(context_character_ids)
 elmo_context_input = weight_layers('input', context_embeddings_op, l2_coef=0.0)
  
 # Now we can compute embeddings.
-raw_context = ['manga longas começam do ombro até o pulso .',
-               'usar mangas curtas em climas quentes é mais agradável .',
-               'a manga é fruta de clima tropical .',
-               'o sumo da manga é delicioso .'] 
- 
+raw_context1 = ['manga longas começam do ombro até o pulso .',
+               'manga curtas são mais apertadas em camisa e em vestido .',
+               'a manga tem polpa doce e suculenta .',
+               'o sumo da manga é muito apreciado , uma delícia .'] 
+
+raw_context2 = ['ombra longas começam do ombro até o pulso .', 
+                'ombra curtas são mais apertadas em camisa e em vestido .', 
+                'a manga tem polpa doce e suculenta .',
+                'o sumo da manga é muito apreciado , uma delícia .']
+
+if T == 1: raw_context = raw_context1 
+else: raw_context = raw_context2
+
 tokenized_context = [sentence.split() for sentence in raw_context]
 print(tokenized_context)
 
@@ -57,67 +68,76 @@ with tf.Session() as sess:
         elmo_context_input['weighted_op'],
         feed_dict={context_character_ids: context_ids}
     )
- 
+
 print("Shape of generated embeddings = ",elmo_context_input_.shape)
 
-#####################################
-
-# [['manga', 'longas', 'começam', 'do', 'ombro', 'até', 'o', 'pulso', '.'],
-# 0 0
-#  ['usar', 'mangas', 'curtas', 'em', 'climas', 'quentes', 'é', 'mais', 'agradável', '.'],
-# 1 1
-#  ['a', 'manga', 'é', 'de', 'clima', 'tropical', '.'],
-# 2 1
-#  ['o', 'sumo', 'da', 'manga', 'é', 'delicioso', '.']]
-# 3 3
-
+#########################################################################################
 # Computing euclidean distance between words embedding
-print("Euclidean Distance Comparison Manga - ")
+print("Euclidean Distance Comparison Manga Fruit (1 & 2) and Manga Vestment (3 & 4)) - T", T )
+# 1
+euc_dist_manga_s0_s1 = np.linalg.norm(elmo_context_input_[0,0,:]
+                                        - elmo_context_input_[1,0,:])
+print("\nSentence 1 x Sentence 2 = ", tokenized_context[0][0],
+      np.round(euc_dist_manga_s0_s1, 2), tokenized_context[1][0])
 
-euc_dist_manga_s0w0_s1w1 = np.linalg.norm(elmo_context_input_[0,0,:]
-                                        - elmo_context_input_[1,1,:])
-print("\nSentence 1 Word 1 x Sentence 2 Word 2 = ", 
-      np.round(euc_dist_manga_s0w0_s1w1, 2))
-
-euc_dist_manga_s0w0_s2w1 = np.linalg.norm(elmo_context_input_[0,0,:]
+euc_dist_manga_s0_s2 = np.linalg.norm(elmo_context_input_[0,0,:]
                                         - elmo_context_input_[2,1,:])
-print("\nSentence 1 Word 1 x Sentence 3 Word 2 = ", 
-      np.round(euc_dist_manga_s0w0_s2w1, 2))
+print("\nSentence 1 x Sentence 3 = ", tokenized_context[0][0], 
+      np.round(euc_dist_manga_s0_s2, 2), tokenized_context[2][1])
 
-euc_dist_manga_s0w0_s3w3 = np.linalg.norm(elmo_context_input_[0,0,:]
+euc_dist_manga_s0_s3 = np.linalg.norm(elmo_context_input_[0,0,:]
                                         - elmo_context_input_[3,3,:])
-print("\nSentence 1 Word 1 x Sentence 4 Word 4 = ", 
-      np.round(euc_dist_manga_s0w0_s3w3, 2))
+print("\nSentence 1 x Sentence 4 = ", tokenized_context[0][0], 
+      np.round(euc_dist_manga_s0_s3, 2), tokenized_context[3][3],)
 
-euc_dist_manga_s2w1_s3w3 = np.linalg.norm(elmo_context_input_[2,1,:]
+# 2
+euc_dist_manga_s1_s2 = np.linalg.norm(elmo_context_input_[1,0,:]
+                                        - elmo_context_input_[2,1,:])
+print("\nSentence 2 x Sentence 3 = ", tokenized_context[1][0], 
+      np.round(euc_dist_manga_s1_s2, 2), tokenized_context[2][1],)
+
+euc_dist_manga_s1_s3 = np.linalg.norm(elmo_context_input_[1,0,:]
                                         - elmo_context_input_[3,3,:])
-print("\nSentence 3 Word 2 x Sentence 4 Word 4 = ", 
-      np.round(euc_dist_manga_s2w1_s3w3, 2))
+print("\nSentence 2 x Sentence 4 = ", tokenized_context[1][0], 
+      np.round(euc_dist_manga_s1_s3, 2), tokenized_context[3][3],)
+
+# 3
+euc_dist_manga_s2_s3 = np.linalg.norm(elmo_context_input_[2,1,:]
+                                        - elmo_context_input_[3,3,:])
+print("\nSentence 3 x Sentence 4 = ", tokenized_context[2][1], 
+      np.round(euc_dist_manga_s2_s3, 2), tokenized_context[3][3],)
 
 # Computing cosine distance between words embedding
-print("\n\nCosine Distance Comparison Manga - ")
+print("\n\nCosine Distance Comparison Manga (Fruit) and Manga (Clothing) - T", T)
+# 1
+cos_dist_manga_s0_s1 = ds.cosine(elmo_context_input_[0,0,:]
+                                    ,elmo_context_input_[1,0,:])
+print("\nSentence 1 x Sentence 2 = ", tokenized_context[0][0]
+      , np.round(cos_dist_manga_s0_s1, 3), tokenized_context[1][0])
 
-cos_dist_manga_s0w0_s1w1 = ds.cosine(elmo_context_input_[0,0,:]
-                                    ,elmo_context_input_[1,1,:])
-print("\nSentence 1 Word 1 x Sentence 2 Word 2 = "
-      , np.round(cos_dist_manga_s0w0_s1w1, 3))
-
-cos_dist_manga_s0w0_s2w1 = ds.cosine(elmo_context_input_[0,0,:]
+cos_dist_manga_s0_s2 = ds.cosine(elmo_context_input_[0,0,:]
                                     ,elmo_context_input_[2,1,:])
-print("\nSentence 1 Word 1 x Sentence 3 Word 2 = "
-      , np.round(cos_dist_manga_s0w0_s2w1, 3))
+print("\nSentence 1 x Sentence 3 = ", tokenized_context[0][0]
+      , np.round(cos_dist_manga_s0_s2, 3), tokenized_context[2][1])
 
-cos_dist_manga_s0w0_s3w3 = ds.cosine(elmo_context_input_[0,0,:]
+cos_dist_manga_s0_s3 = ds.cosine(elmo_context_input_[0,0,:]
                                     ,elmo_context_input_[3,3,:])
-print("\nSentence 1 Word 1 x Sentence 4 Word 4 = "
-      , np.round(cos_dist_manga_s0w0_s3w3, 3))
+print("\nSentence 1 x Sentence 4 = ", tokenized_context[0][0]
+      , np.round(cos_dist_manga_s0_s3, 3), tokenized_context[3][3])
 
-cos_dist_manga_s2w1_s3w3 = ds.cosine(elmo_context_input_[2,1,:]
+# 2
+cos_dist_manga_s0w0_s2w0 = ds.cosine(elmo_context_input_[1,0,:]
+                                    ,elmo_context_input_[2,1,:])
+print("\nSentence 2 x Sentence 3 = ", tokenized_context[1][0]
+      , np.round(cos_dist_manga_s0_s2, 3), tokenized_context[2][1])
+
+cos_dist_manga_s1_s3 = ds.cosine(elmo_context_input_[1,0,:]
                                     ,elmo_context_input_[3,3,:])
-print("\nSentence 3 Word 2 x Sentence 4 Word 4 = "
-      , np.round(cos_dist_manga_s2w1_s3w3, 3))
+print("\nSentence 2 x Sentence 4 = ", tokenized_context[1][0]
+      , np.round(cos_dist_manga_s1_s3, 3), tokenized_context[3][3])
 
-
-
-
-     
+# 3
+cos_dist_manga_s2_s3 = ds.cosine(elmo_context_input_[2,1,:]
+                                    ,elmo_context_input_[3,3,:])
+print("\nSentence 3 x Sentence 4 = ", tokenized_context[2][1]
+      , np.round(cos_dist_manga_s2_s3, 3), tokenized_context[3][3])
